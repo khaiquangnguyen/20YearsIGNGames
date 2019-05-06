@@ -6,7 +6,9 @@ const GENRES = ['Action', 'Adventure', 'Board', 'Card', 'Educational', 'Fighting
 const PLATFORMS = ['Dreamcast', 'Game Boy (Color, Advance)', 'GameCube', 'Mobile', 'Nintendo (DS, 3DS, DSi)', 'Nintendo 64', 'PC', 'PlayStation (1, 2 ,3, 4)', 'PlayStation (Portable, Vita)', 'Wii (U)', 'Xbox (360, One)', 'iPad'];
 var genre_selections = GENRES;
 var platform_selections = PLATFORMS;
-
+const TRANSITION_DURTAION = 500;
+var LOW_OPACITY = 0.2;
+var HIGH_OPACITY = 1;
 
 // Set up the dimensions of the file
 // sizing information, including margins so there is space for labels, etc
@@ -180,6 +182,14 @@ d3.queue()
             .attr("cx", function (d) { return x_scatter(d.genre); })
             .attr("cy", function (d) { return y_scatter(d.platform); })
             .attr('r', function (d) { return d.count / max_count * 20; })
+            .attr('opacity', function (d) {
+                if (genre_selections.indexOf(d.genre) === -1 && platform_selections.indexOf(d.platform) === -1) {
+                    return 0.1;
+                }
+                else {
+                    return 1;
+                }
+            })
             .attr("width", x_scatter.bandwidth())
             .attr("height", function (d) { return height_scatter - y_scatter(d.frequency); });
 
@@ -295,11 +305,23 @@ d3.queue()
             genre_plot.selectAll(".genre_path")
                 .data(genre_layers)
                 .transition()
-                .duration(750)
+                .duration(TRANSITION_DURTAION)
                 .attr("d", area_genre)
                 .attr("fill", function (d, i) {
                     return genres_colors[i];
                 });
+
+            scatter_plot.selectAll("circle")
+                .transition()
+                .duration(TRANSITION_DURTAION)
+                .attr('opacity', function (d) {
+                    if (genre_selections.indexOf(d.genre) === -1 || platform_selections.indexOf(d.platform) === -1) {
+                        return 0.1;
+                    }
+                    else {
+                        return 1;
+                    }
+                })
         });
 
         // ---------------------------------------------
@@ -372,11 +394,22 @@ d3.queue()
             platform_plot.selectAll(".platform_path")
                 .data(platform_layers)
                 .transition()
-                .duration(750)
+                .duration(TRANSITION_DURTAION)
                 .attr("d", area_platform)
                 .attr("fill", function (d, i) {
                     return platform_colors[i];
                 });
+            scatter_plot.selectAll("circle")
+                .transition()
+                .duration(TRANSITION_DURTAION)
+                .attr('opacity', function (d) {
+                    if (genre_selections.indexOf(d.genre) === -1 || platform_selections.indexOf(d.platform) === -1) {
+                        return 0.1;
+                    }
+                    else {
+                        return 1;
+                    }
+                })
         });
 
     });
