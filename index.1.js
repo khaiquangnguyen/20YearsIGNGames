@@ -2,16 +2,16 @@
 
 
 // sizing information, including margins so there is space for labels, etc
-var margin = { top: 20, right: 20, bottom: 100, left: 20 },
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom,
-    marginOverview = { top: 430, right: margin.right, bottom: 20, left: margin.left },
+var margin_scatter = { top: 20, right: 20, bottom: 100, left: 20 },
+    width_scatter = 960 - margin_scatter.left - margin_scatter.right,
+    height_scatter = 500 - margin_scatter.top - margin_scatter.bottom,
+    marginOverview = { top: 430, right: margin_scatter.right, bottom: 20, left: margin_scatter.left },
     heightOverview = 500 - marginOverview.top - marginOverview.bottom;
 
 var svg = d3.select("body")
     .append("svg") // the overall space
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom);
+    .attr("width", width_scatter + margin_scatter.left + margin_scatter.right)
+    .attr("height", height_scatter + margin_scatter.top + margin_scatter.bottom);
 
 var dateParse = d3.timeParse("%Y");
 
@@ -113,15 +113,15 @@ d3.csv("games_2.csv", function (error, data) {
 
     var x = d3.scaleTime()
         .domain([parsedData[0].date, parsedData[parsedData.length - 1].date])
-        .range([0, width]);
+        .range([0, width_scatter]);
 
     var y = d3.scaleLinear()
         .domain([0, d3.max(layers, stackMax)])
-        .range([height, 0]);
+        .range([height_scatter, 0]);
 
     var xOverview = d3.scaleTime()
         .domain([parsedData[0].date, parsedData[parsedData.length - 1].date])
-        .range([0, width]);
+        .range([0, width_scatter]);
 
     var yOverview = d3.scaleLinear()
         .domain([0, d3.max(layers, stackMax)])
@@ -163,14 +163,14 @@ d3.csv("games_2.csv", function (error, data) {
 
     var main = svg.append("g")
         .attr("class", "main")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", "translate(" + margin_scatter.left + "," + margin_scatter.top + ")");
 
     var overview = svg.append("g")
         .attr("class", "overview")
         .attr("transform", "translate(" + marginOverview.left + "," + marginOverview.top + ")");
 
     var gX = main.append("g")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", "translate(0," + height_scatter + ")")
         .attr("class", "axis axis--x")
         .call(xAxis)
         .select(".domain")

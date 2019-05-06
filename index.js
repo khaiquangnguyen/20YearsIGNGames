@@ -26,41 +26,42 @@ const aggregate = (fields, data) => {
     console.log(parsedData);
 }
 
-
-
-
-// sizing information, including margins so there is space for labels, etc
-var margin = { top: 20, right: 20, bottom: 100, left: 20 },
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-var svg = d3.select("#scatter_plot")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom);
-
-var genreDict = {};
-GENRES.forEach(genre => {
-    genreDict[genre] = true;
-});
-
-
-var x = d3.scaleTime()
-    .range([0, width]);
-
-var y = d3.scaleLinear()
-    .range([height, 0]);
-
-var xAxis = d3.axisBottom(x),
-    yAxis = d3.axisLeft(y);
-
-
+// get max of the stack
 function stackMax(layer) {
     return d3.max(layer, function (d) { return d[1]; });
 }
 
-d3.csv("pre_processed.csv", function (error, data) {
-    var max_count = 0;
-    var parsedData = [];
+
+
+
+// sizing information, including margins so there is space for labels, etc
+var margin_scatter = { top: 20, right: 20, bottom: 100, left: 150 },
+    width_scatter = 1000 - margin_scatter.left - margin_scatter.right,
+    height_scatter = 500 - margin_scatter.top - margin_scatter.bottom;
+
+var svg_scatter = d3.select("#scatter_plot")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "0 0 1000 500")
+    .classed("svg-content", true)
+
+var genre_dict = {};
+GENRES.forEach(genre => {
+    genre_dict[genre] = true;
+});
+
+// axes for the lots
+var x_genres = d3.scaleTime().range([0, width_scatter]),
+    y_genres = d3.scaleLinear().range([height_scatter, 0]),
+    x_scatter = d3.scaleBand().rangeRound([0, width_scatter]).padding(0.1),
+    y_scatter = d3.scaleBand().rangeRound([0, height_scatter]).padding(0.1);
+
+var x_axis_genres = d3.axisBottom(x_genres),
+    y_axis_genres = d3.axisLeft(y_genres),
+    x_axis_scatter = d3.axisBottom(x_scatter),
+    y_axis_scatter = d3.axisLeft(y_scatter);
+
+var generate_scatter_array = () => {
+    var scatter_data = [];
     platform_selections.forEach(platform => {
         genre_selections.forEach(genre => {
             let object = {
@@ -68,52 +69,54 @@ d3.csv("pre_processed.csv", function (error, data) {
                 'genre': genre,
                 'count': 0
             }
-            parsedData.push(object);
+            scatter_data.push(object);
         })
     });
-    console.log(parsedData);
+    return scatter_data;
+    console.log(scatter_data);
+}
+d3.csv("pre_processed.csv", function (error, data) {
+    var max_count = 0;
+    // preprocessing the data to get the right data format
+    var scatter_data = generate_scatter_array();
     data.forEach(function (d) {
         d['release_year'] = dateParse(d['release_year']);
         const p_index = platform_selections.indexOf(d.platform);
         const g_index = genre_selections.indexOf(d.genre);
         if (p_index != -1 && g_index != -1) {
             const data_index = p_index * genre_selections.length + g_index;
-            parsedData[data_index].count = parsedData[data_index].count + 1;
-            max_count = Math.max(max_count, parsedData[data_index].count);
+            scatter_data[data_index].count = scatter_data[data_index].count + 1;
+            max_count = Math.max(max_count, scatter_data[data_index].count);
         }
     });
-    // Define Extent for each Dataset
-    var x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
 
-    var y = d3.scaleBand().rangeRound([0, height]).padding(0.1);
+    // define the domain
+    x_scatter.domain(data.map(function (d) { return d.genre; }));
+    y_scatter.domain(data.map(function (d) { return d.platform; }));
 
-    var xAxis = d3.axisBottom(x),
-        yAxis = d3.axisLeft(y);
-    x.domain(data.map(function (d) { return d.genre; }));
-    y.domain(data.map(function (d) { return d.platform; }));
-
-    var main = svg.append("g")
+    // create the main plot
+    var scatter_plot = svg_scatter.append("g")
         .attr("class", "main")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    main.append("g")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", "translate(" + margin_scatter.left + "," + margin_scatter.top + ")");
+    // draw the axes
+    scatter_plot.append("g")
+        .attr("transform", "translate(-22," + height_scatter + ")")
         .attr("class", "axis axis--x")
-        .call(xAxis)
+        .call(x_axis_scatter)
 
-    main.append("g")
+    scatter_plot.append("g")
         .attr("class", "axis axis--y")
-        .call(yAxis)
+        .call(y_axis_scatter)
 
-    main.selectAll(".column")
-        .data(parsedData)
+    scatter_plot.selectAll(".column")
+        .data(scatter_data)
         .enter().append("circle")
         .attr("class", "bar")
-        .attr("cx", function (d) { return x(d.genre); })
-        .attr("cy", function (d) { return y(d.platform); })
+        .attr("cx", function (d) { return x_scatter(d.genre); })
+        .attr("cy", function (d) { return y_scatter(d.platform); })
         .attr('r', function (d) { return d.count / max_count * 20; })
-        .attr("width", x.bandwidth())
-        .attr("height", function (d) { return height - y(d.frequency); });
+        .attr("width", x_scatter.bandwidth())
+        .attr("height", function (d) { return height_scatter - y_scatter(d.frequency); });
 
 });
 // d3.csv("games_2.csv", function (error, data) {

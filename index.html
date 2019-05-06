@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <style>
-    .axis {
-      font: 10px sans-serif;
-    }
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
-    .brush .extent {
-      stroke: #fff;
-      fill-opacity: .125;
-      shape-rendering: crispEdges;
-    }
+   .svg-container {
+    display: inline-block;
+    position: relative;
+    width: 60%;
+    padding-bottom: 100%;
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
 </style>
 
 <head>
@@ -25,11 +25,15 @@
     <script src="http://binaworks.github.io/scripts/d3-container.v0.0.1.min.js"></script>
 </head>
 <body>
+<div id="scatter_container" class="svg-container">
 <svg id = "scatter_plot"></svg>
+</div>
+<div id="genre_container" class="svg-container">
 <svg id = "genres"></svg>
+</div>
+<div id="platform_container" class="svg-container">
 <svg id = "platforms"></svg>
-
-
+</div>
 <script src="index.js"></script>
 </body>
 </html>
