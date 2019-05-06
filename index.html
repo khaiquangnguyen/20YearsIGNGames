@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+    .axis {
+      font: 10px sans-serif;
+    }
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+    .brush .extent {
+      stroke: #fff;
+      fill-opacity: .125;
+      shape-rendering: crispEdges;
+    }
+</style>
+
+<head>
+	<title>I'm Learning D3</title>
+	<!-- Load the D3 library here -->
+	<script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.24.0/d3-legend.js"></script>
+    <script src="http://binaworks.github.io/scripts/d3-container.v0.0.1.min.js"></script>
+</head>
+<body>
+<svg id = "scatter_plot"></svg>
+<svg id = "genres"></svg>
+<svg id = "platforms"></svg>
+
+
+<script src="index.js"></script>
+</body>
+</html>
