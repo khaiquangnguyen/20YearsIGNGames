@@ -117,8 +117,8 @@ d3.csv("pre_processed.csv", function (error, data) {
         .attr('r', function (d) { return d.count / max_count * 20; })
         .attr("width", x_scatter.bandwidth())
         .attr("height", function (d) { return height_scatter - y_scatter(d.frequency); });
-
 });
+
 // d3.csv("games_2.csv", function (error, data) {
 //     if (error) throw error;
 //     // Parse the data first
