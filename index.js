@@ -255,7 +255,7 @@ d3.queue()
             .x(function (d, i) { return x_genres(d.data.date) })
             .y0(function (d) { return y_genres(d[0]); })
             .y1(function (d) { return y_genres(d[1]); })
-            .curve(d3.curveMonotoneX);
+            // .curve(d3.curveMonotoneX);
 
         var genre_plot = svg_genre.append("g")
             .attr("class", "main")
@@ -343,7 +343,7 @@ d3.queue()
             .x(function (d, i) { return x_platforms(d.data.date) })
             .y0(function (d) { return y_platforms(d[0]); })
             .y1(function (d) { return y_platforms(d[1]); })
-            .curve(d3.curveMonotoneX);
+            // .curve(d3.curveMonotoneX);
 
         var platform_plot = svg_platform.append("g")
             .attr("class", "main")
