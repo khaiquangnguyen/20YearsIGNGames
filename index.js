@@ -1,5 +1,5 @@
 // Preparations varibles, constants and functions
-
+console.log(window.innerHeight)
 // to convert date object
 var dateParse = d3.timeParse("%Y");
 const GENRES = ['Action', 'Adventure', 'Board', 'Card', 'Educational', 'Fighting', 'Hunting', 'Music', 'Party', 'Platformer', 'Puzzle', 'RPG', 'Racing', 'Shooter', 'Simulation', 'Sports', 'Strategy'];
@@ -7,36 +7,38 @@ const PLATFORMS = ['Dreamcast', 'Game Boy (Color, Advance)', 'GameCube', 'Mobile
 var genre_selections = GENRES;
 var platform_selections = PLATFORMS;
 const TRANSITION_DURTAION = 500;
-var LOW_OPACITY = 0.2;
+var LOW_OPACITY = 0.4;
 var HIGH_OPACITY = 1;
+const HEIGHT = 450;
+const legendOffset = 500;
 
 // Set up the dimensions of the file
 // sizing information, including margins so there is space for labels, etc
-var margin_scatter = { top: 20, right: 20, bottom: 100, left: 150 },
-    width_scatter = 1000 - margin_scatter.left - margin_scatter.right,
-    height_scatter = 500 - margin_scatter.top - margin_scatter.bottom;
+var margin_scatter = { top: 50, right: 20, bottom: 50, left: 200 },
+    width_scatter = 1400 - margin_scatter.left - margin_scatter.right,
+    height_scatter = HEIGHT - margin_scatter.top - margin_scatter.bottom;
 
 var svg_scatter = d3.select("#scatter_plot")
     .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", "0 0 1000 500")
+    .attr("viewBox", `0 0 1400 ${HEIGHT}`)
     .classed("svg-content", true)
 
 // sizing information, including margins so there is space for labels, etc
-var margin_genre = { top: 20, right: 20, bottom: 100, left: 150 },
-    width_genre = 500 - margin_genre.left - margin_genre.right,
-    height_genre = 500 - margin_genre.top - margin_genre.bottom;
+var margin_genre = { top: 50, right: 170, bottom: 50, left: 70 },
+    width_genre = 700 - margin_genre.left - margin_genre.right,
+    height_genre = HEIGHT - margin_genre.top - margin_genre.bottom;
 var svg_genre = d3.select("#genres_plot")
     .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", "0 0 500 500")
+    .attr("viewBox", `0 0 700 ${HEIGHT}`)
     .classed("svg-content", true)
 
 // sizing information, including margins so there is space for labels, etc
-var margin_platform = { top: 20, right: 20, bottom: 100, left: 150 },
-    width_platform = 500 - margin_platform.left - margin_platform.right,
-    height_platform = 500 - margin_platform.top - margin_platform.bottom;
+var margin_platform = { top: 50, right: 170, bottom: 50, left: 70 },
+    width_platform = 700 - margin_platform.left - margin_platform.right,
+    height_platform = HEIGHT - margin_platform.top - margin_platform.bottom;
 var svg_platform = d3.select("#platforms_plot")
     .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", "0 0 500 500")
+    .attr("viewBox", `0 0 700 ${HEIGHT}`)
     .classed("svg-content", true)
 
 // to aggregate all data points of the same release date
@@ -162,6 +164,62 @@ d3.queue()
             }
         });
 
+        function sizeLegend(selection, props) {
+            const sizeScale = props.sizeScale;
+            const positionX = props.positionX;
+            const positionY = props.positionY;
+            const ticksCount = props.ticks;
+            const tickFill = props.tickFill;
+            const tickSpacing = props.tickSpacing;
+            const tickPadding = props.tickPadding;
+            const label = props.label;
+            const labelX = props.labelX;
+            const labelY = props.labelY;
+
+            let legendG = selection
+                .selectAll(".legend--size")
+                .data([null]);
+            legendG = legendG
+                .enter().append("g")
+                .attr("class", "legend legend--size")
+                .merge(legendG)
+                .attr("transform", `translate(${positionX}, ${positionY})`);
+
+            const legendLabel = legendG
+                .selectAll(".legend__label")
+                .data([null]);
+            legendLabel
+                .enter().append("text")
+                .attr("class", "legend__label")
+                .merge(legendLabel)
+                .attr("x", labelX)
+                .attr("y", labelY)
+                .text(label);
+
+            const ticks = legendG
+                .selectAll(".tick")
+                .data(sizeScale.ticks(ticksCount).filter(d => d));
+            const ticksEnter = ticks
+                .enter().append("g")
+                .attr("class", "tick");
+            ticksEnter
+                .merge(ticks)
+                .attr("transform", (d, i) => `translate(0, ${i * tickSpacing})`);
+            ticks.exit().remove();
+
+            ticksEnter
+                .append("circle")
+                .merge(ticks.select("circle"))
+                .attr("r", sizeScale)
+                .attr("fill", tickFill);
+
+            ticksEnter
+                .append("text")
+                .merge(ticks.select("text"))
+                .attr("x", tickPadding)
+                .text(d => d);
+        }
+
         // define the domain
         x_scatter.domain(scatter_data.map(function (d) { return d.genre; }));
         y_scatter.domain(scatter_data.map(function (d) { return d.platform; }));
@@ -170,14 +228,60 @@ d3.queue()
         var scatter_plot = svg_scatter.append("g")
             .attr("class", "main")
             .attr("transform", "translate(" + margin_scatter.left + "," + margin_scatter.top + ")");
+
+        // sizeLegend(scatter_plot, {
+        //     sizeScale: d3.scaleSqrt().range([0, 5]),
+        //     positionX: 722,
+        //     positionY: 200,
+        //     ticks: 5,
+        //     tickFill: "black",
+        //     tickSpacing: 35,
+        //     tickPadding: 16,
+        //     label: "Petal Width",
+        //     labelX: -20,
+        //     labelY: -30
+        //   })
+
         // draw the axes
+        scatter_plot.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin_scatter.left - 5)
+            .attr("x", 0 - (HEIGHT / 2 - margin_scatter.bottom))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .style("font-size", "18px")
+            .text("Platforms");
+
+        scatter_plot.append("text")
+            .attr("transform",
+                "translate(" + (width_scatter / 2) + " ," +
+                (height_genre + margin_genre.top) + ")")
+            .style("text-anchor", "middle")
+            .text("Genres")
+            .style("font-size", "18px");
+
+        scatter_plot.append("text")
+            .attr("transform",
+                "translate(" + (width_scatter / 2) + " ," +
+                (-20) + ")")
+            .style("text-anchor", "middle")
+            .text("Number of Games per Platform & Genre")
+            .style("font-size", "18px")
+            .style('font-weight', 'bold');
+
+
         scatter_plot.append("g")
-            .attr("transform", "translate(-22," + height_scatter + ")")
+            .attr("transform", "translate(-32," + height_scatter + ")")
             .attr("class", "axis axis--x")
+            .style("font-size", "14px")
             .call(x_axis_scatter)
+            .selectAll("text")
+            .attr("transform", "rotate(20)")
+            .style("text-anchor", "start");
 
         scatter_plot.append("g")
             .attr("class", "axis axis--y")
+            .style("font-size", "14px")
             .call(y_axis_scatter)
 
         scatter_plot.selectAll(".column")
@@ -186,7 +290,8 @@ d3.queue()
             .attr("class", "column")
             .attr("cx", function (d) { return x_scatter(d.genre); })
             .attr("cy", function (d) { return y_scatter(d.platform); })
-            .attr('r', function (d) { return d.count / max_count * 20; })
+            .attr('r', function (d) { return d.count < 10 ? 2 : d.count / max_count * 15; })
+            .attr('fill', genres_colors[0])
             .attr('opacity', function (d) {
                 if (genre_selections.indexOf(d.genre) === -1 && platform_selections.indexOf(d.platform) === -1) {
                     return 0.1;
@@ -261,7 +366,8 @@ d3.queue()
         x_genres.domain([genre_data[0].date, genre_data[genre_data.length - 1].date]);
         y_genres.domain([0, d3.max(genre_layers, stackMax)]);
 
-        var legendOffset = -20;
+
+
 
         var genre_legend = d3.legendColor()
             .shapeWidth(30)
@@ -279,21 +385,48 @@ d3.queue()
             .attr("id", "genre_plot")
             .attr("transform", "translate(" + margin_genre.left + "," + margin_genre.top + ")");
 
+        genre_plot.append("text")
+
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin_genre.left - 5)
+            .attr("x", 0 - (HEIGHT / 2 - margin_genre.bottom))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Number of Games")
+            .style("font-size", "18px");
+
+        genre_plot.append("text")
+            .attr("transform",
+                "translate(" + (width_genre / 2) + " ," +
+                (height_genre + margin_genre.top) + ")")
+            .style("text-anchor", "middle")
+            .text("Years")
+            .style("font-size", "18px");
+        genre_plot.append("text")
+            .attr("transform",
+                "translate(" + (width_genre / 2) + " ," +
+                -20 + ")")
+            .style("text-anchor", "middle")
+            .text("Genres by Years")
+            .style("font-size", "18px")
+            .style("font-weight", 'bold');
+
         genre_plot.append("g")
             .attr("transform", "translate(0," + height_genre + ")")
             .attr("class", "axis axis--x")
+            .style("font-size", "14px")
             .call(x_axis_genres)
             .select(".domain")
             .remove();
 
         genre_plot.append("g")
             .attr("class", "axis axis--y")
+            .style("font-size", "14px")
             .call(y_axis_genres);
 
         genre_plot.selectAll(".genre_path")
             .data(genre_layers)
-            .enter().append("g")
-            .append("path")
+            .enter().append("path")
             .attr("class", "genre_path")
             .attr("d", area_genre)
             .attr("id", function (d, i) {
@@ -326,12 +459,13 @@ d3.queue()
                             return 1;
                         }
                         else {
-                            return LOW_OPACITY * 2;
+                            return LOW_OPACITY;
                         }
                     });
                 genre_plot.selectAll(".genre_tooltip")
                     .data(genre_layers[i])
                     .enter().append("text")
+                    .style("font-size", "16px")
                     .attr("id", "scatter_tooltip")
                     .attr("x", function (d) { return x_genres(d.data.date) - 10; })
                     .attr("y", function (d) { return y_genres(d[1]) - 10; })
@@ -342,6 +476,7 @@ d3.queue()
                     .enter().append("circle")
                     .attr("cx", function (d) { return x_genres(d.data.date); })
                     .attr("cy", function (d) { return y_genres(d[1]); })
+                    .attr('fill', genres_colors[i])
                     .attr('r', 2)
 
             })
@@ -364,10 +499,20 @@ d3.queue()
                     genre_selections.push(genre);
                 }
             });
+            const colorSwatch = d3.select(this);
+            const label = d3.select(this.nextSibling);
+            if (genre_dict[item] === false) {
+                colorSwatch.style('opacity', LOW_OPACITY);
+                label.style('opacity', LOW_OPACITY);
+            } else {
+                colorSwatch.style('opacity', HIGH_OPACITY);
+                label.style('opacity', HIGH_OPACITY);
+            }
             // recalculate the data
             genre_data = aggregate(genre_selections, data, GENRES);
             genre_layers = genre_stack(genre_data);
             y_genres.domain([0, d3.max(genre_layers, stackMax)]);
+            genre_plot.select(".axis.axis--y").style("font-size", "14px").call(y_axis_genres);
             genre_plot.selectAll(".genre_path")
                 .data(genre_layers)
                 .transition()
@@ -399,7 +544,6 @@ d3.queue()
         var platform_layers = platform_stack(platform_data);
         x_platforms.domain([platform_data[0].date, platform_data[platform_data.length - 1].date]);
         y_platforms.domain([0, d3.max(platform_layers, stackMax)]);
-        var legendOffset = -20;
         var platform_legend = d3.legendColor()
             .shapeWidth(30)
             .cells(PLATFORMS.length)
@@ -416,25 +560,101 @@ d3.queue()
             .attr("id", "platform_plot")
             .attr("transform", "translate(" + margin_genre.left + "," + margin_genre.top + ")");
 
+        platform_plot.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin_genre.left - 5)
+            .attr("x", 0 - (HEIGHT / 2 - margin_genre.bottom))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Number of Games")
+            .style("font-size", "18px");
+
+        platform_plot.append("text")
+            .attr("transform",
+                "translate(" + (width_genre / 2) + " ," +
+                (height_genre + margin_genre.top) + ")")
+            .style("text-anchor", "middle")
+            .text("Years")
+            .style("font-size", "18px");
+
+        platform_plot.append("text")
+            .attr("transform",
+                "translate(" + (width_genre / 2) + " ," +
+                -20 + ")")
+            .style("text-anchor", "middle")
+            .text("Platforms by Years")
+            .style("font-size", "18px")
+            .style("font-weight", 'bold');;
+
+
         platform_plot.append("g")
             .attr("transform", "translate(0," + height_platform + ")")
             .attr("class", "axis axis--x")
+            .style("font-size", "14px")
             .call(x_axis_platforms)
             .select(".domain")
             .remove();
 
         platform_plot.append("g")
             .attr("class", "axis axis--y")
+            .style("font-size", "14px")
             .call(y_axis_platforms);
-        console.log(platform_layers);
+
         platform_plot.selectAll(".platform_path")
             .data(platform_layers)
             .enter().append("path")
             .attr("class", "platform_path")
             .attr("d", area_platform)
+            .attr("id", function (d, i) {
+                return (PLATFORMS[i]);
+            })
             .attr("fill", function (d, i) {
                 return platform_colors[i];
-            });
+            })
+            .on("mouseout", function (d) {
+                platform_plot.selectAll(".platform_path")
+                    .transition("ease-in-out")
+                    .duration(TRANSITION_DURTAION)
+                    .attr("d", area_platform)
+                    .style("opacity", 1)
+
+                platform_plot.selectAll("circle")
+                    .data([])
+                    .exit().remove();
+                platform_plot.selectAll("#scatter_tooltip")
+                    .data([])
+                    .exit().remove();
+            })
+            .on("mouseover", function (d, i) {
+                var current_element = this;
+                platform_plot.selectAll(".platform_path")
+                    .transition("ease-in-out")
+                    .duration(TRANSITION_DURTAION / 2)
+                    .style("opacity", function (d, i) {
+                        if (PLATFORMS[i] === current_element.id) {
+                            return 1;
+                        }
+                        else {
+                            return LOW_OPACITY;
+                        }
+                    });
+                platform_plot.selectAll(".platform_tooltip")
+                    .data(platform_layers[i])
+                    .enter().append("text")
+                    .style("font-size", "16px")
+                    .attr("id", "scatter_tooltip")
+                    .attr("x", function (d) { return x_platforms(d.data.date) - 10; })
+                    .attr("y", function (d) { return y_platforms(d[1]) - 10; })
+                    .html(function (d, i) { return platform_data[i][current_element.id] })
+
+                platform_plot.selectAll(".platform_tooltip")
+                    .data(platform_layers[i])
+                    .enter().append("circle")
+                    .attr("cx", function (d) { return x_platforms(d.data.date); })
+                    .attr("cy", function (d) { return y_platforms(d[1]); })
+                    .attr('fill', platform_colors[i])
+                    .attr('r', 2)
+            })
 
         var legendObject = platform_plot.append("g")
             .attr("class", "legend")
@@ -453,11 +673,20 @@ d3.queue()
                     platform_selections.push(platform);
                 }
             });
+            const colorSwatch = d3.select(this);
+            const label = d3.select(this.nextSibling);
+            if (platform_dict[item] === false) {
+                colorSwatch.style('opacity', LOW_OPACITY);
+                label.style('opacity', LOW_OPACITY);
+            } else {
+                colorSwatch.style('opacity', HIGH_OPACITY);
+                label.style('opacity', HIGH_OPACITY);
+            }
             // recalculate the data
             platform_data = aggregate(platform_selections, data, PLATFORMS);
             platform_layers = platform_stack(platform_data);
             y_platforms.domain([0, d3.max(platform_layers, stackMax)]);
-            console.log(platform_plot.selectAll(".platform_path"));
+            platform_plot.select(".axis.axis--y").style("font-size", "14px").call(y_axis_platforms);
             platform_plot.selectAll(".platform_path")
                 .data(platform_layers)
                 .transition()
